@@ -1,102 +1,72 @@
-# Dashboard de Performance de Anúncios
 
-Uma dashboard interativa para análise de performance de campanhas de anúncios do Facebook Ads e Google Ads, construída com Streamlit.
+# Traffic Dashboard Analyzer
 
-## Funcionalidades
+A modern, responsive dashboard for analyzing paid traffic from Facebook Ads and Google Ads campaigns. This dashboard provides comprehensive analytics and visualization of key performance metrics to help you optimize your advertising efforts.
 
-- Visualização de métricas importantes de campanhas publicitárias
-- Integração com Facebook Ads e Google Ads
-- Suporte para upload manual de arquivos CSV
-- Gráficos interativos com Plotly
-- Exportação de relatórios em Excel e PDF
-- Filtros por data, plataforma e campanha
-- Interface responsiva e moderna
-- Sistema de autenticação básico
+## Features
 
-## Requisitos
+- **Interactive Filtering**: Filter by date range, platform, campaign, and objective
+- **KPI Cards**: Visualize key metrics in easy-to-read cards
+- **Performance Charts**: Track spend, clicks, impressions, and conversions over time
+- **Platform Comparison**: Compare Facebook and Google Ads performance side by side
+- **Spend Distribution**: See how your budget is allocated across campaigns
+- **Detailed Campaign Table**: View all campaigns with their key metrics
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
+- **CSV Import**: Upload your campaign data via CSV files
+- **Export Functionality**: Export dashboard data as PDF or Excel
+- **Secure Access**: Basic login functionality for data security
 
-- Python 3.8+
-- Pip (gerenciador de pacotes Python)
-- Credenciais de API do Facebook Ads e Google Ads
+## Metrics Included
 
-## Instalação
+- Total Spend
+- Impressions
+- Clicks
+- Conversions
+- CPM (Cost per thousand impressions)
+- CPC (Cost per click)
+- CTR (Click-through rate)
+- CPA (Cost per acquisition)
+- Conversion Rate
+- ROAS (Return on ad spend)
+- Reach (Facebook)
+- Engagement metrics
 
-1. Clone o repositório:
-```bash
-git clone [URL_DO_REPOSITORIO]
-cd ads_dashboard
-```
+## Technologies Used
 
-2. Crie um ambiente virtual (recomendado):
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-```
+- **React**: Frontend framework
+- **TypeScript**: Type-safe JavaScript
+- **Tailwind CSS**: Utility-first CSS framework
+- **Recharts**: Responsive charting library
+- **Shadcn UI**: Modern UI component library
+- **React Day Picker**: Date range selection
 
-3. Instale as dependências:
-```bash
-pip install -r requirements.txt
-```
+## Getting Started
 
-4. Configure as variáveis de ambiente:
-   - Copie o arquivo `.env.example` para `.env`
-   - Preencha as credenciais necessárias no arquivo `.env`
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start the development server: `npm run dev`
+4. Open your browser to: `http://localhost:8080`
 
-## Configuração das APIs
+## Using the Dashboard
 
-### Facebook Ads
-1. Crie um app no Facebook Developers
-2. Obtenha o Access Token com permissões de ads_read
-3. Configure as credenciais no arquivo `.env`
+1. Log in using the demo credentials (username/password containing "demo")
+2. Use the filters at the top to refine your data view
+3. Explore the different sections of the dashboard:
+   - KPI Cards: Quick overview of key metrics
+   - Performance Charts: Data visualization over time
+   - Platform Analysis: Compare platforms and see spend distribution
+   - Campaign Details: Detailed campaign metrics in tabular format
 
-### Google Ads
-1. Configure uma conta Google Ads API
-2. Crie credenciais OAuth 2.0
-3. Configure o arquivo `.env` com as credenciais
+## Adding Your Own Data
 
-## Uso
+In a real implementation, you would:
 
-1. Ative o ambiente virtual:
-```bash
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-```
+1. Connect to Facebook and Google Ads APIs for real-time data
+2. Or import data via CSV files using the import functionality
+3. Implement proper authentication for security
 
-2. Execute a aplicação:
-```bash
-streamlit run app.py
-```
+For this demo, mock data is provided to showcase the dashboard capabilities.
 
-3. Acesse a dashboard no navegador:
-```
-http://localhost:8501
-```
+## License
 
-## Estrutura do Projeto
-
-```
-ads_dashboard/
-├── app.py              # Aplicação principal Streamlit
-├── api_connectors.py   # Conectores para APIs
-├── utils.py           # Funções utilitárias
-├── requirements.txt   # Dependências do projeto
-├── .env.example      # Template de variáveis de ambiente
-└── README.md         # Documentação
-```
-
-## Contribuindo
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-## Licença
-
-Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-## Suporte
-
-Para suporte, envie um email para [seu-email@exemplo.com] ou abra uma issue no repositório.
+This project is licensed under the MIT License - see the LICENSE file for details.
