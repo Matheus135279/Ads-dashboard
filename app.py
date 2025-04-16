@@ -84,65 +84,82 @@ st.sidebar.markdown("""
 
 def process_facebook_data(df):
     """Processa e valida os dados do Facebook Ads"""
-    # Mapeamento de colunas do Facebook Ads
-    column_mapping = {
-        "Nome da campanha": "campaign_name",
-        "Valor usado (BRL)": "spend",
-        "Impressões": "impressions",
-        "Cliques no link": "clicks",
-        "CTR (taxa de cliques no link)": "ctr",
-        "CPC (custo por clique no link)": "cpc",
-        "CPM (custo por 1.000 impressões)": "cpm",
-        "Alcance": "reach",
-        "Resultados": "conversions"
-    }
-    
-    # Verifica quais colunas obrigatórias estão presentes
-    required_columns = [
-        "Nome da campanha",
-        "Valor usado (BRL)",
-        "Impressões",
-        "Cliques no link",
-        "CTR (taxa de cliques no link)",
-        "CPC (custo por clique no link)"
-    ]
-    
-    missing_columns = [col for col in required_columns if col not in df.columns]
-    
-    if missing_columns:
-        st.error(f"""
-        ⚠️ Aviso: Este arquivo não contém todas as colunas necessárias para o funcionamento da dashboard.
-        
-        Colunas faltantes:
-        {', '.join(missing_columns)}
-        
-        Por favor, verifique se você está usando o arquivo de exportação correto do Facebook Ads.
-        """)
-        return None
-    
-    # Renomeia as colunas presentes
-    columns_to_rename = {old: new for old, new in column_mapping.items() if old in df.columns}
-    df = df.rename(columns=columns_to_rename)
-    
-    # Converte valores para formato numérico
     try:
-        # Remove R$ e . dos valores monetários e substitui , por .
+        # Mapeamento de colunas do Facebook Ads
+        column_mapping = {
+            "Nome da campanha": "campaign_name",
+            "Valor usado (BRL)": "spend",
+            "Impressões": "impressions",
+            "Cliques no link": "clicks",
+            "CTR (taxa de cliques no link)": "ctr",
+            "CPC (custo por clique no link)": "cpc",
+            "CPM (custo por 1.000 impressões)": "cpm",
+            "Alcance": "reach",
+            "Resultados": "conversions",
+            # Adicionando mapeamentos alternativos comuns
+            "Campaign name": "campaign_name",
+            "Amount spent (BRL)": "spend",
+            "Link clicks": "clicks",
+            "CTR (Link click-through rate)": "ctr",
+            "CPC (Cost per link click)": "cpc",
+            "Impressions": "impressions",
+            "Reach": "reach",
+            "Results": "conversions"
+        }
+        
+        # Verifica quais colunas obrigatórias estão presentes (usando ambos os nomes possíveis)
+        required_columns_pt = [
+            "Nome da campanha",
+            "Valor usado (BRL)",
+            "Impressões",
+            "Cliques no link"
+        ]
+        
+        required_columns_en = [
+            "Campaign name",
+            "Amount spent (BRL)",
+            "Impressions",
+            "Link clicks"
+        ]
+        
+        # Verifica se as colunas estão presentes em português ou inglês
+        missing_columns = []
+        for pt, en in zip(required_columns_pt, required_columns_en):
+            if pt not in df.columns and en not in df.columns:
+                missing_columns.append(f"{pt} / {en}")
+        
+        if missing_columns:
+            st.error(f"""
+            ⚠️ Aviso: Este arquivo não contém todas as colunas necessárias para o funcionamento da dashboard.
+            
+            Colunas faltantes:
+            {', '.join(missing_columns)}
+            
+            Por favor, verifique se você está usando o arquivo de exportação correto do Facebook Ads.
+            """)
+            return None
+        
+        # Renomeia as colunas presentes
+        columns_to_rename = {old: new for old, new in column_mapping.items() if old in df.columns}
+        df = df.rename(columns=columns_to_rename)
+        
+        # Converte valores para formato numérico
         if "spend" in df.columns:
-            df["spend"] = df["spend"].str.replace("R$", "").str.replace(".", "").str.replace(",", ".").astype(float)
+            df["spend"] = df["spend"].astype(str).str.replace("R$", "").str.replace(".", "").str.replace(",", ".").astype(float)
         if "cpc" in df.columns:
-            df["cpc"] = df["cpc"].str.replace("R$", "").str.replace(".", "").str.replace(",", ".").astype(float)
+            df["cpc"] = df["cpc"].astype(str).str.replace("R$", "").str.replace(".", "").str.replace(",", ".").astype(float)
         if "cpm" in df.columns:
-            df["cpm"] = df["cpm"].str.replace("R$", "").str.replace(".", "").str.replace(",", ".").astype(float)
+            df["cpm"] = df["cpm"].astype(str).str.replace("R$", "").str.replace(".", "").str.replace(",", ".").astype(float)
         
         # Remove % e converte CTR
         if "ctr" in df.columns:
-            df["ctr"] = df["ctr"].str.rstrip("%").astype(float) / 100
+            df["ctr"] = df["ctr"].astype(str).str.rstrip("%").astype(float) / 100
         
         # Converte valores inteiros
         numeric_columns = ["impressions", "clicks", "reach", "conversions"]
         for col in numeric_columns:
             if col in df.columns:
-                df[col] = pd.to_numeric(df[col].str.replace(".", ""), errors="coerce")
+                df[col] = pd.to_numeric(df[col].astype(str).str.replace(".", ""), errors="coerce")
         
         # Se não tiver coluna de conversões, cria com zeros
         if "conversions" not in df.columns:
@@ -151,6 +168,9 @@ def process_facebook_data(df):
         # Se não tiver coluna de alcance, usa impressões
         if "reach" not in df.columns:
             df["reach"] = df["impressions"]
+            
+        # Preenche valores NaN com 0
+        df = df.fillna(0)
             
         return df
         
