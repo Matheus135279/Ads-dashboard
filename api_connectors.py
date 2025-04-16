@@ -78,7 +78,16 @@ class FacebookAdsConnector:
 
 class GoogleAdsConnector:
     def __init__(self):
-        self.client = GoogleAdsClient.load_from_env()
+        # Configuração específica para resolver o erro do use_proto_plus
+        client_config = {
+            'use_proto_plus': True,  # Adicionando a configuração necessária
+            'developer_token': os.getenv('GOOGLE_ADS_DEVELOPER_TOKEN'),
+            'client_id': os.getenv('GOOGLE_ADS_CLIENT_ID'),
+            'client_secret': os.getenv('GOOGLE_ADS_CLIENT_SECRET'),
+            'refresh_token': os.getenv('GOOGLE_ADS_REFRESH_TOKEN'),
+            'login_customer_id': os.getenv('GOOGLE_ADS_CUSTOMER_ID')
+        }
+        self.client = GoogleAdsClient.load_from_dict(client_config)
         self.customer_id = os.getenv('GOOGLE_ADS_CUSTOMER_ID')
     
     def get_campaigns_data(self, start_date, end_date):
