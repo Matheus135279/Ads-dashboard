@@ -332,6 +332,32 @@ def main():
         </div>
     """, unsafe_allow_html=True)
 
+    # Adiciona os botões na sidebar
+    st.sidebar.markdown("""
+        <div class="sidebar-menu">
+            <h3>Menu Principal</h3>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Botões da sidebar
+    if st.sidebar.button("📊 Dashboard", key="btn_dashboard", help="Visualizar dashboard principal"):
+        st.session_state.page = "dashboard"
+    
+    if st.sidebar.button("📈 Análise de Campanhas", key="btn_campaigns", help="Análise detalhada das campanhas"):
+        st.session_state.page = "campaigns"
+    
+    if st.sidebar.button("💰 Análise de Custos", key="btn_costs", help="Análise de custos e ROI"):
+        st.session_state.page = "costs"
+    
+    if st.sidebar.button("🎯 Métricas de Conversão", key="btn_conversions", help="Análise de conversões"):
+        st.session_state.page = "conversions"
+    
+    if st.sidebar.button("⚙️ Configurações", key="btn_settings", help="Configurações do dashboard"):
+        st.session_state.page = "settings"
+
+    # Divisor na sidebar
+    st.sidebar.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
     # Título principal
     st.title("📊 Dashboard de Resultados - Facebook Ads")
 
