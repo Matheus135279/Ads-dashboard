@@ -4,10 +4,12 @@ import plotly.express as px
 import plotly.graph_objects as go
 from base64 import b64encode
 from datetime import datetime
+import io
+from openpyxl import Workbook
 
 # Configuração da página
 st.set_page_config(
-    page_title="Dashboard de Performance de Anúncios",
+    page_title="Plataforma de Resultados - HubLever",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -19,6 +21,7 @@ st.markdown("""
     /* Tema escuro personalizado */
     [data-testid="stAppViewContainer"] {
         background: linear-gradient(180deg, #1E1B2E 0%, #2D1A4D 100%);
+        color: white;
     }
     
     .stApp {
@@ -29,9 +32,30 @@ st.markdown("""
     [data-testid="stSidebar"] {
         background: rgba(45, 26, 77, 0.95);
         border-right: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 2rem 0;
     }
     
-    /* Estilo dos cards de métricas */
+    /* Header do usuário */
+    .user-header {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Menu da sidebar */
+    .sidebar-menu {
+        margin: 2rem 0;
+    }
+    
+    .sidebar-menu .stRadio > label {
+        color: white !important;
+        font-size: 1.1rem;
+        padding: 0.5rem 0;
+    }
+    
+    /* Cards de métricas */
     .metric-card {
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -40,10 +64,12 @@ st.markdown("""
         text-align: center;
         backdrop-filter: blur(10px);
         transition: transform 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
     
     .metric-card:hover {
         transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(255,107,107,0.2);
     }
     
     .metric-value {
@@ -62,54 +88,44 @@ st.markdown("""
         letter-spacing: 1px;
     }
     
-    /* Estilo dos títulos */
-    h1, h2, h3 {
-        color: white !important;
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-    
-    /* Estilo dos gráficos */
-    [data-testid="stPlotlyChart"] {
-        background: rgba(255, 255, 255, 0.02);
-        border-radius: 15px;
+    /* Tabelas de ranking */
+    .ranking-table {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
         padding: 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin: 1rem 0;
     }
     
-    /* Estilo da tabela de dados */
-    .stDataFrame {
-        background: rgba(255, 255, 255, 0.02);
-        border-radius: 15px;
+    .high-cpc {
+        color: #FF6B6B !important;
+        font-weight: bold;
+    }
+    
+    /* Área de notas */
+    .notes-area {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
         padding: 1rem;
+        margin: 1rem 0;
     }
     
-    /* Estilo do rodapé */
-    .footer {
-        text-align: center;
-        padding: 2rem;
-        margin-top: 3rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Estilo dos botões */
-    .stButton > button {
+    /* Botões de exportação */
+    .export-button {
         background: linear-gradient(90deg, #FF6B6B, #FF8E53) !important;
         color: white !important;
-        border: none !important;
         padding: 0.5rem 2rem !important;
         border-radius: 10px !important;
-        font-weight: 500 !important;
-        transition: all 0.3s ease !important;
+        border: none !important;
+        box-shadow: 0 4px 15px rgba(255,107,107,0.2) !important;
     }
     
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(255, 107, 107, 0.2);
+    .export-button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(255,107,107,0.3) !important;
     }
     
-    /* Divisores personalizados */
-    .custom-divider {
+    /* Divisores */
+    .section-divider {
         border: 0;
         height: 1px;
         background: linear-gradient(90deg, 
@@ -119,14 +135,6 @@ st.markdown("""
         margin: 2rem 0;
     }
     </style>
-    """, unsafe_allow_html=True)
-
-# Logo HubLever
-st.sidebar.markdown("""
-    <div class="logo-container">
-        <img src="https://hublever.com.br/wp-content/uploads/2024/02/logo-hublever-branco.png" 
-             style="width: 150px;">
-    </div>
     """, unsafe_allow_html=True)
 
 def process_facebook_data(df):
@@ -231,192 +239,189 @@ def process_facebook_data(df):
         """)
         return None
 
-def create_spend_distribution_chart(df):
-    """Cria gráfico de pizza de distribuição de gastos"""
-    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96C93D', '#FF8E53']
-    
-    fig = px.pie(
-        df, 
-        values='spend', 
-        names='campaign_name',
-        title='Distribuição de Investimento por Campanha',
-        template='plotly_dark',
-        color_discrete_sequence=colors
-    )
-    fig.update_traces(
-        textposition='inside',
-        textinfo='percent+label',
-        hole=0.4,
-        marker=dict(line=dict(color='rgba(255,255,255,0.1)', width=2))
-    )
-    fig.update_layout(
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        showlegend=True,
-        legend=dict(
-            bgcolor='rgba(255,255,255,0.05)',
-            bordercolor='rgba(255,255,255,0.1)'
-        ),
-        title_x=0.5,
-        title_font_size=20
-    )
-    return fig
-
-def create_performance_chart(df):
-    """Cria gráfico de barras de performance"""
+def create_evolution_chart(df, metric, title):
+    """Cria gráfico de linha com evolução temporal"""
     fig = go.Figure()
     
-    fig.add_trace(go.Bar(
-        name='Cliques',
-        x=df['campaign_name'],
-        y=df['clicks'],
-        marker_color='#FF6B6B'
-    ))
-    
-    fig.add_trace(go.Bar(
-        name='Conversões',
-        x=df['campaign_name'],
-        y=df['conversions'],
-        marker_color='#4ECDC4'
+    fig.add_trace(go.Scatter(
+        x=df.index,
+        y=df[metric],
+        mode='lines+markers',
+        name=metric.capitalize(),
+        line=dict(
+            color='#FF6B6B',
+            width=3
+        ),
+        fill='tonexty',
+        fillcolor='rgba(255,107,107,0.1)'
     ))
     
     fig.update_layout(
-        title='Performance por Campanha',
+        title=title,
         title_x=0.5,
         title_font_size=20,
-        xaxis_title='Campanha',
-        yaxis_title='Quantidade',
-        barmode='group',
         template='plotly_dark',
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
-        showlegend=True,
-        legend=dict(
-            bgcolor='rgba(255,255,255,0.05)',
-            bordercolor='rgba(255,255,255,0.1)'
-        )
+        xaxis_title="Data",
+        yaxis_title=metric.capitalize(),
+        showlegend=False,
+        hovermode='x unified'
     )
     return fig
 
-def create_spend_trend_chart(df):
-    """Cria gráfico de linha de tendência de gastos"""
-    if 'date' in df.columns:
-        fig = px.line(
-            df,
-            x='date',
-            y='spend',
-            title='Evolução do Investimento Diário',
-            template='plotly_white'
-        )
-        fig.update_traces(mode='lines+markers')
-        return fig
-    return None
+def export_to_excel(df):
+    """Exporta o DataFrame para Excel"""
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name='Dados', index=False)
+    return output.getvalue()
 
 def main():
-    st.title("📊 Dashboard de Performance de Anúncios")
+    # Sidebar
+    st.sidebar.markdown("""
+        <div style="text-align: center; padding: 1rem;">
+            <img src="https://hublever.com.br/wp-content/uploads/2024/02/logo-hublever-branco.png" 
+                 style="width: 150px; margin-bottom: 2rem;">
+            <h2 style="color: white;">Plataforma de Resultados</h2>
+        </div>
+    """, unsafe_allow_html=True)
     
-    # Upload do arquivo
-    st.sidebar.header("Upload de Dados")
-    uploaded_file = st.sidebar.file_uploader(
-        "Upload do arquivo CSV do Facebook Ads",
-        type="csv",
-        help="O arquivo deve conter: campaign_name, spend, clicks, impressions, ctr, cpc"
+    menu = st.sidebar.radio(
+        "",
+        ["📊 Painel de Campanhas", "📈 Evolução Diária", "📥 Upload de Arquivos", 
+         "📁 Exportar Relatórios", "⚙️ Configurações"],
+        key="menu"
     )
     
-    # Botão de visualização
-    visualizar = st.sidebar.button("📊 Visualizar Dados", use_container_width=True)
+    # Header do usuário
+    st.markdown("""
+        <div class="user-header">
+            👤 Cliente: Dra. Jéssica Martani | Último acesso: 16/04/2025
+        </div>
+    """, unsafe_allow_html=True)
     
-    if visualizar and uploaded_file is not None:
-        # Lê e processa os dados
+    # Upload do arquivo
+    uploaded_file = None
+    if menu == "📥 Upload de Arquivos":
+        st.header("📥 Upload de Dados")
+        uploaded_file = st.file_uploader(
+            "Upload do arquivo CSV do Facebook Ads",
+            type="csv",
+            help="O arquivo deve conter: campaign_name, spend, clicks, impressions, ctr, cpc"
+        )
+        if uploaded_file:
+            st.session_state['uploaded_file'] = uploaded_file
+    else:
+        if 'uploaded_file' in st.session_state:
+            uploaded_file = st.session_state['uploaded_file']
+    
+    if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
         df = process_facebook_data(df)
         
         if df is not None:
-            # Seção de KPIs
-            st.header("📈 Métricas Principais")
-            
-            col1, col2, col3, col4, col5 = st.columns(5)
-            
-            with col1:
-                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-                st.markdown('<p class="metric-label">Investimento Total</p>', unsafe_allow_html=True)
-                st.markdown(f'<p class="metric-value">R$ {df["spend"].sum():,.2f}</p>', unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
+            if menu == "📊 Painel de Campanhas":
+                st.header("📊 Painel de Campanhas")
                 
-            with col2:
-                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-                st.markdown('<p class="metric-label">Total de Cliques</p>', unsafe_allow_html=True)
-                st.markdown(f'<p class="metric-value">{int(df["clicks"].sum()):,}</p>', unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
+                # KPIs
+                col1, col2, col3, col4, col5 = st.columns(5)
                 
-            with col3:
-                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-                st.markdown('<p class="metric-label">CPC Médio</p>', unsafe_allow_html=True)
-                st.markdown(f'<p class="metric-value">R$ {df["spend"].sum() / df["clicks"].sum():.2f}</p>', unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
+                with col1:
+                    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                    st.markdown('<p class="metric-label">Investimento Total</p>', unsafe_allow_html=True)
+                    st.markdown(f'<p class="metric-value">R$ {df["spend"].sum():,.2f}</p>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
+                with col2:
+                    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                    st.markdown('<p class="metric-label">Total de Cliques</p>', unsafe_allow_html=True)
+                    st.markdown(f'<p class="metric-value">{int(df["clicks"].sum()):,}</p>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
+                with col3:
+                    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                    st.markdown('<p class="metric-label">CPC Médio</p>', unsafe_allow_html=True)
+                    st.markdown(f'<p class="metric-value">R$ {df["spend"].sum() / df["clicks"].sum():.2f}</p>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
+                with col4:
+                    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                    st.markdown('<p class="metric-label">CTR Médio</p>', unsafe_allow_html=True)
+                    st.markdown(f'<p class="metric-value">{(df["clicks"].sum() / df["impressions"].sum() * 100):.2f}%</p>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
+                with col5:
+                    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                    st.markdown('<p class="metric-label">Conversões</p>', unsafe_allow_html=True)
+                    st.markdown(f'<p class="metric-value">{int(df["conversions"].sum()):,}</p>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
                 
-            with col4:
-                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-                st.markdown('<p class="metric-label">CTR Médio</p>', unsafe_allow_html=True)
-                st.markdown(f'<p class="metric-value">{(df["clicks"].sum() / df["impressions"].sum() * 100):.2f}%</p>', unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
                 
-            with col5:
-                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-                st.markdown('<p class="metric-label">Conversões</p>', unsafe_allow_html=True)
-                st.markdown(f'<p class="metric-value">{int(df["conversions"].sum()):,}</p>', unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
+                # Rankings
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.subheader("🏆 Top 5 Campanhas por Cliques")
+                    top_clicks = df.nlargest(5, 'clicks')[['campaign_name', 'clicks', 'spend']]
+                    st.dataframe(top_clicks, use_container_width=True)
+                
+                with col2:
+                    st.subheader("⚠️ Top 5 Maiores CPCs")
+                    top_cpc = df.nlargest(5, 'cpc')[['campaign_name', 'cpc', 'clicks']]
+                    st.dataframe(top_cpc, use_container_width=True)
+                
+                st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+                
+                # Notas por campanha
+                st.subheader("📝 Notas e Observações")
+                for campaign in df['campaign_name'].unique():
+                    with st.expander(f"Campanha: {campaign}"):
+                        st.text_area("Insights e observações:", key=f"notes_{campaign}")
             
-            # Divisor personalizado
-            st.markdown('<hr class="custom-divider">', unsafe_allow_html=True)
+            elif menu == "📈 Evolução Diária":
+                st.header("📈 Evolução Diária")
+                
+                if 'date' in df.columns:
+                    df['date'] = pd.to_datetime(df['date'])
+                    df_daily = df.groupby('date').agg({
+                        'spend': 'sum',
+                        'clicks': 'sum'
+                    }).reset_index()
+                    
+                    # Gráfico de evolução de gastos
+                    st.plotly_chart(
+                        create_evolution_chart(df_daily, 'spend', 'Evolução do Investimento Diário'),
+                        use_container_width=True
+                    )
+                    
+                    # Gráfico de evolução de cliques
+                    st.plotly_chart(
+                        create_evolution_chart(df_daily, 'clicks', 'Evolução dos Cliques Diários'),
+                        use_container_width=True
+                    )
+                else:
+                    st.warning("⚠️ O arquivo não contém dados de data para gerar a evolução diária.")
             
-            # Seção de Gráficos
-            st.header("📊 Análise Visual")
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.plotly_chart(
-                    create_spend_distribution_chart(df),
-                    use_container_width=True
+            elif menu == "📁 Exportar Relatórios":
+                st.header("📁 Exportar Relatórios")
+                
+                excel_data = export_to_excel(df)
+                st.download_button(
+                    label="📥 Baixar Relatório Completo (Excel)",
+                    data=excel_data,
+                    file_name="relatorio_campanhas.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
             
-            with col2:
-                st.plotly_chart(
-                    create_performance_chart(df),
-                    use_container_width=True
-                )
-            
-            # Divisor personalizado
-            st.markdown('<hr class="custom-divider">', unsafe_allow_html=True)
-            
-            # Dados Detalhados
-            st.header("📋 Dados Detalhados")
-            st.dataframe(df, use_container_width=True)
-            
-            # Rodapé com logo
-            st.markdown('<div class="footer">', unsafe_allow_html=True)
-            st.markdown("""
-                <img src="https://hublever.com.br/wp-content/uploads/2024/02/logo-hublever-branco.png" 
-                     style="width: 100px; opacity: 0.7;">
-            """, unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-            
+            elif menu == "⚙️ Configurações":
+                st.header("⚙️ Configurações")
+                st.info("🚧 Área em desenvolvimento...")
+    
     else:
-        st.info("👆 Faça o upload do arquivo CSV do Facebook Ads e clique em 'Visualizar Dados' para começar.")
-        
-        st.markdown("""
-        ### Formato esperado do arquivo CSV:
-        
-        O arquivo deve conter as seguintes colunas:
-        - Nome da campanha / Campaign name
-        - Valor usado (BRL) / Amount spent (BRL)
-        - Impressões / Impressions
-        - Cliques no link / Link clicks
-        - CTR / CTR (opcional)
-        - CPC / CPC (opcional)
-        - Conversões / Results (opcional)
-        """)
+        if menu != "📥 Upload de Arquivos":
+            st.info("👆 Por favor, faça o upload do arquivo CSV na seção 'Upload de Arquivos'.")
 
 if __name__ == "__main__":
     main() 
