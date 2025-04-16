@@ -30,7 +30,7 @@ st.markdown("""
     
     /* Barra lateral estilizada */
     [data-testid="stSidebar"] {
-        background: rgba(45, 26, 77, 0.95);
+        background: #2D1A4D;
         border-right: 1px solid rgba(255, 255, 255, 0.1);
         padding: 2rem 0;
     }
@@ -62,40 +62,35 @@ st.markdown("""
         font-size: 1.2rem;
         font-weight: 600;
         text-align: center;
-        margin: 1rem 0;
+        margin: 1rem 0 2rem 0;
         padding: 0.5rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
-    
+
     /* Botões do menu */
-    .sidebar-button {
+    div[data-testid="stSidebar"] button[kind="secondary"] {
+        background-color: rgba(255, 255, 255, 0.05);
+        border: none;
+        padding: 15px 20px;
         width: 100%;
-        padding: 0.8rem 1rem;
-        margin: 0.3rem 0;
-        background-color: #2D1A4D;
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 10px;
+        border-radius: 10px;
+        color: white;
         font-size: 0.95rem;
+        margin: 5px 0;
+        transition: all 0.3s ease;
     }
-    
-    .sidebar-button:hover {
-        background-color: #5B2A8A;
-        border-color: rgba(255, 255, 255, 0.2);
-        transform: translateX(5px);
+
+    div[data-testid="stSidebar"] button[kind="secondary"]:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border: none;
     }
-    
-    .sidebar-button.active {
-        background-color: #5B2A8A;
-        border-color: rgba(255, 255, 255, 0.3);
-        box-shadow: 0 0 10px rgba(91, 42, 138, 0.5);
+
+    div[data-testid="stSidebar"] button[kind="secondary"].active {
+        background-color: rgba(255, 255, 255, 0.1);
     }
-    
+
     /* Divisor */
     .section-divider {
         border: 0;
@@ -112,7 +107,7 @@ st.markdown("""
         padding: 2rem;
     }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 def process_facebook_data(df):
     """Processa e valida os dados do Facebook Ads"""
@@ -267,26 +262,21 @@ def main():
         <div class="platform-title">Plataforma de Resultados</div>
     """, unsafe_allow_html=True)
 
-    # Botões da sidebar com estilo personalizado
-    buttons = {
-        "Painel de Campanhas": "📊",
-        "Evolução Diária": "📈",
-        "Upload de Arquivos": "📥",
-        "Exportar Relatórios": "📤",
-        "Configurações": "⚙️"
-    }
-
-    for page, icon in buttons.items():
-        active_class = "active" if st.session_state.page == page else ""
-        if st.sidebar.markdown(f"""
-            <button class="sidebar-button {active_class}" onclick="this.form.submit()">
-                {icon} {page}
-            </button>
-        """, unsafe_allow_html=True):
-            st.session_state.page = page
-
-    # Divisor na sidebar
-    st.sidebar.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+    # Botões da sidebar
+    if st.sidebar.button("🖥️ Painel de Campanhas", key="btn_dashboard", help="Visualizar painel de campanhas"):
+        st.session_state.page = "Painel de Campanhas"
+    
+    if st.sidebar.button("📈 Evolução Diária", key="btn_evolution", help="Ver evolução diária"):
+        st.session_state.page = "Evolução Diária"
+    
+    if st.sidebar.button("📥 Upload de Arquivos", key="btn_upload", help="Fazer upload de arquivos"):
+        st.session_state.page = "Upload de Arquivos"
+    
+    if st.sidebar.button("📤 Exportar Relatórios", key="btn_export", help="Exportar relatórios"):
+        st.session_state.page = "Exportar Relatórios"
+    
+    if st.sidebar.button("⚙️ Configurações", key="btn_settings", help="Configurações do sistema"):
+        st.session_state.page = "Configurações"
 
     # Container principal baseado na página selecionada
     main_container = st.container()
@@ -295,7 +285,54 @@ def main():
         if st.session_state.page == "Painel de Campanhas":
             st.title("📊 Painel de Campanhas")
             # Conteúdo do painel de campanhas
-            # ... rest of the existing main() function code ...
+            show_campaign_dashboard()
+        
+        elif st.session_state.page == "Evolução Diária":
+            st.title("📈 Evolução Diária")
+            # Conteúdo da evolução diária
+            show_daily_evolution()
+        
+        elif st.session_state.page == "Upload de Arquivos":
+            st.title("📥 Upload de Arquivos")
+            # Conteúdo do upload de arquivos
+            show_file_upload()
+        
+        elif st.session_state.page == "Exportar Relatórios":
+            st.title("📤 Exportar Relatórios")
+            # Conteúdo da exportação de relatórios
+            show_export_reports()
+        
+        elif st.session_state.page == "Configurações":
+            st.title("⚙️ Configurações")
+            # Conteúdo das configurações
+            show_settings()
+
+def show_campaign_dashboard():
+    """Função para mostrar o painel de campanhas"""
+    # Aqui vai o código original do dashboard de campanhas
+    pass
+
+def show_daily_evolution():
+    """Função para mostrar a evolução diária"""
+    st.write("Em desenvolvimento: Evolução Diária")
+
+def show_file_upload():
+    """Função para mostrar a tela de upload"""
+    uploaded_file = st.file_uploader("Faça upload do arquivo de exportação do Facebook Ads (CSV ou XLSX)", type=["csv", "xlsx"])
+    if uploaded_file is not None:
+        try:
+            # Código existente para processar o arquivo
+            pass
+        except Exception as e:
+            st.error(f"Erro ao processar o arquivo: {str(e)}")
+
+def show_export_reports():
+    """Função para mostrar a tela de exportação"""
+    st.write("Em desenvolvimento: Exportação de Relatórios")
+
+def show_settings():
+    """Função para mostrar a tela de configurações"""
+    st.write("Em desenvolvimento: Configurações")
 
 if __name__ == "__main__":
     main()
