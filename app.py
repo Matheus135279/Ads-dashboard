@@ -35,6 +35,36 @@ st.markdown("""
         padding: 2rem 0;
     }
     
+    /* Botões do menu */
+    .menu-button {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 0.8rem 1rem;
+        margin: 0.5rem 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .menu-button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
+    }
+    
+    .menu-button.active {
+        background: linear-gradient(90deg, #FF6B6B, #FF8E53);
+        border: none;
+    }
+    
+    .menu-button i {
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+    
     /* Header do usuário */
     .user-header {
         background: rgba(255, 255, 255, 0.05);
@@ -278,21 +308,35 @@ def export_to_excel(df):
     return output.getvalue()
 
 def main():
-    # Sidebar
+    # Sidebar com logo e menu
     st.sidebar.markdown("""
         <div style="text-align: center; padding: 1rem;">
             <img src="https://hublever.com.br/wp-content/uploads/2024/02/logo-hublever-branco.png" 
                  style="width: 150px; margin-bottom: 2rem;">
-            <h2 style="color: white;">Plataforma de Resultados</h2>
+            <h2 style="color: white; margin-bottom: 2rem;">Plataforma de Resultados</h2>
         </div>
     """, unsafe_allow_html=True)
     
-    menu = st.sidebar.radio(
-        "",
-        ["📊 Painel de Campanhas", "📈 Evolução Diária", "📥 Upload de Arquivos", 
-         "📁 Exportar Relatórios", "⚙️ Configurações"],
-        key="menu"
-    )
+    # Menu com botões estilizados
+    menu_options = {
+        "📊 Painel de Campanhas": "dashboard",
+        "📈 Evolução Diária": "evolution",
+        "📥 Upload de Arquivos": "upload",
+        "📁 Exportar Relatórios": "export",
+        "⚙️ Configurações": "settings"
+    }
+    
+    selected = st.session_state.get('menu_selected', 'dashboard')
+    
+    for label, key in menu_options.items():
+        button_class = "menu-button active" if selected == key else "menu-button"
+        if st.sidebar.markdown(f"""
+            <div class="{button_class}">
+                {label}
+            </div>
+            """, unsafe_allow_html=True):
+            selected = key
+            st.session_state.menu_selected = key
     
     # Header do usuário
     st.markdown("""
@@ -301,127 +345,147 @@ def main():
         </div>
     """, unsafe_allow_html=True)
     
-    # Upload do arquivo
-    uploaded_file = None
-    if menu == "📥 Upload de Arquivos":
+    # Gerenciamento de estado do arquivo
+    if 'df' not in st.session_state:
+        st.session_state.df = None
+    
+    # Upload e processamento do arquivo
+    if selected == "upload":
         st.header("📥 Upload de Dados")
         uploaded_file = st.file_uploader(
             "Upload do arquivo CSV do Facebook Ads",
             type="csv",
             help="O arquivo deve conter: campaign_name, spend, clicks, impressions, ctr, cpc"
         )
-        if uploaded_file:
-            st.session_state['uploaded_file'] = uploaded_file
-    else:
-        if 'uploaded_file' in st.session_state:
-            uploaded_file = st.session_state['uploaded_file']
-    
-    if uploaded_file is not None:
-        df = pd.read_csv(uploaded_file)
-        df = process_facebook_data(df)
         
-        if df is not None:
-            if menu == "📊 Painel de Campanhas":
-                st.header("📊 Painel de Campanhas")
+        if uploaded_file is not None:
+            try:
+                df = pd.read_csv(uploaded_file)
+                processed_df = process_facebook_data(df)
                 
-                # KPIs
-                col1, col2, col3, col4, col5 = st.columns(5)
-                
-                with col1:
-                    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-                    st.markdown('<p class="metric-label">Investimento Total</p>', unsafe_allow_html=True)
-                    st.markdown(f'<p class="metric-value">R$ {df["spend"].sum():,.2f}</p>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
+                if processed_df is not None:
+                    st.session_state.df = processed_df
+                    st.success("✅ Arquivo processado com sucesso!")
                     
-                with col2:
-                    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-                    st.markdown('<p class="metric-label">Total de Cliques</p>', unsafe_allow_html=True)
-                    st.markdown(f'<p class="metric-value">{int(df["clicks"].sum()):,}</p>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
-                    
-                with col3:
-                    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-                    st.markdown('<p class="metric-label">CPC Médio</p>', unsafe_allow_html=True)
-                    st.markdown(f'<p class="metric-value">R$ {df["spend"].sum() / df["clicks"].sum():.2f}</p>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
-                    
-                with col4:
-                    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-                    st.markdown('<p class="metric-label">CTR Médio</p>', unsafe_allow_html=True)
-                    st.markdown(f'<p class="metric-value">{(df["clicks"].sum() / df["impressions"].sum() * 100):.2f}%</p>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
-                    
-                with col5:
-                    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-                    st.markdown('<p class="metric-label">Conversões</p>', unsafe_allow_html=True)
-                    st.markdown(f'<p class="metric-value">{int(df["conversions"].sum()):,}</p>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
-                
-                st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-                
-                # Rankings
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    st.subheader("🏆 Top 5 Campanhas por Cliques")
-                    top_clicks = df.nlargest(5, 'clicks')[['campaign_name', 'clicks', 'spend']]
-                    st.dataframe(top_clicks, use_container_width=True)
-                
-                with col2:
-                    st.subheader("⚠️ Top 5 Maiores CPCs")
-                    top_cpc = df.nlargest(5, 'cpc')[['campaign_name', 'cpc', 'clicks']]
-                    st.dataframe(top_cpc, use_container_width=True)
-                
-                st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-                
-                # Notas por campanha
-                st.subheader("📝 Notas e Observações")
-                for campaign in df['campaign_name'].unique():
-                    with st.expander(f"Campanha: {campaign}"):
-                        st.text_area("Insights e observações:", key=f"notes_{campaign}")
-            
-            elif menu == "📈 Evolução Diária":
-                st.header("📈 Evolução Diária")
-                
-                if 'date' in df.columns:
-                    df['date'] = pd.to_datetime(df['date'])
-                    df_daily = df.groupby('date').agg({
-                        'spend': 'sum',
-                        'clicks': 'sum'
-                    }).reset_index()
-                    
-                    # Gráfico de evolução de gastos
-                    st.plotly_chart(
-                        create_evolution_chart(df_daily, 'spend', 'Evolução do Investimento Diário'),
-                        use_container_width=True
-                    )
-                    
-                    # Gráfico de evolução de cliques
-                    st.plotly_chart(
-                        create_evolution_chart(df_daily, 'clicks', 'Evolução dos Cliques Diários'),
-                        use_container_width=True
-                    )
+                    # Preview dos dados
+                    st.subheader("Preview dos dados carregados")
+                    st.dataframe(processed_df.head(), use_container_width=True)
                 else:
-                    st.warning("⚠️ O arquivo não contém dados de data para gerar a evolução diária.")
-            
-            elif menu == "📁 Exportar Relatórios":
-                st.header("📁 Exportar Relatórios")
+                    st.error("❌ Erro ao processar o arquivo. Verifique se o formato está correto.")
+            except Exception as e:
+                st.error(f"""
+                ❌ Erro ao carregar o arquivo:
+                {str(e)}
                 
-                excel_data = export_to_excel(df)
-                st.download_button(
-                    label="📥 Baixar Relatório Completo (Excel)",
-                    data=excel_data,
-                    file_name="relatorio_campanhas.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
+                Verifique se o arquivo está no formato correto e tente novamente.
+                """)
+    
+    # Renderização das outras seções apenas se houver dados
+    elif st.session_state.df is not None:
+        df = st.session_state.df
+        
+        if selected == "dashboard":
+            st.header("📊 Painel de Campanhas")
             
-            elif menu == "⚙️ Configurações":
-                st.header("⚙️ Configurações")
-                st.info("🚧 Área em desenvolvimento...")
+            # KPIs
+            col1, col2, col3, col4, col5 = st.columns(5)
+            
+            with col1:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                st.markdown('<p class="metric-label">Investimento Total</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="metric-value">R$ {df["spend"].sum():,.2f}</p>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+            with col2:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                st.markdown('<p class="metric-label">Total de Cliques</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="metric-value">{int(df["clicks"].sum()):,}</p>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+            with col3:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                st.markdown('<p class="metric-label">CPC Médio</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="metric-value">R$ {df["spend"].sum() / df["clicks"].sum():.2f}</p>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+            with col4:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                st.markdown('<p class="metric-label">CTR Médio</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="metric-value">{(df["clicks"].sum() / df["impressions"].sum() * 100):.2f}%</p>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+            with col5:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                st.markdown('<p class="metric-label">Conversões</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="metric-value">{int(df["conversions"].sum()):,}</p>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+            
+            st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+            
+            # Rankings
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("🏆 Top 5 Campanhas por Cliques")
+                top_clicks = df.nlargest(5, 'clicks')[['campaign_name', 'clicks', 'spend']]
+                st.dataframe(top_clicks, use_container_width=True)
+            
+            with col2:
+                st.subheader("⚠️ Top 5 Maiores CPCs")
+                top_cpc = df.nlargest(5, 'cpc')[['campaign_name', 'cpc', 'clicks']]
+                st.dataframe(top_cpc, use_container_width=True)
+            
+            st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+            
+            # Notas por campanha
+            st.subheader("📝 Notas e Observações")
+            for campaign in df['campaign_name'].unique():
+                with st.expander(f"Campanha: {campaign}"):
+                    st.text_area("Insights e observações:", key=f"notes_{campaign}")
+        
+        elif selected == "evolution":
+            st.header("📈 Evolução Diária")
+            
+            if 'date' in df.columns:
+                df['date'] = pd.to_datetime(df['date'])
+                df_daily = df.groupby('date').agg({
+                    'spend': 'sum',
+                    'clicks': 'sum'
+                }).reset_index()
+                
+                # Gráfico de evolução de gastos
+                st.plotly_chart(
+                    create_evolution_chart(df_daily, 'spend', 'Evolução do Investimento Diário'),
+                    use_container_width=True
+                )
+                
+                # Gráfico de evolução de cliques
+                st.plotly_chart(
+                    create_evolution_chart(df_daily, 'clicks', 'Evolução dos Cliques Diários'),
+                    use_container_width=True
+                )
+            else:
+                st.warning("⚠️ O arquivo não contém dados de data para gerar a evolução diária.")
+        
+        elif selected == "export":
+            st.header("📁 Exportar Relatórios")
+            
+            excel_data = export_to_excel(df)
+            st.download_button(
+                label="📥 Baixar Relatório Completo (Excel)",
+                data=excel_data,
+                file_name="relatorio_campanhas.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+        
+        elif selected == "settings":
+            st.header("⚙️ Configurações")
+            st.info("🚧 Área em desenvolvimento...")
     
     else:
-        if menu != "📥 Upload de Arquivos":
+        if selected != "upload":
             st.info("👆 Por favor, faça o upload do arquivo CSV na seção 'Upload de Arquivos'.")
+            st.sidebar.warning("⚠️ Nenhum arquivo carregado")
 
 if __name__ == "__main__":
     main() 
