@@ -140,4 +140,84 @@ def load_csv_data(file_path, platform):
         return df
     except Exception as e:
         print(f"Erro ao carregar arquivo CSV: {str(e)}")
+        return pd.DataFrame()
+
+def process_facebook_csv(file):
+    """Processa arquivo CSV do Facebook Ads"""
+    try:
+        df = pd.read_csv(file)
+        required_columns = ['campaign_name', 'spend', 'impressions', 'clicks', 'ctr', 'cpc', 'cpm', 'reach']
+        
+        # Verifica se as colunas necessárias existem
+        if not all(col in df.columns for col in required_columns):
+            raise ValueError("O arquivo CSV do Facebook não contém todas as colunas necessárias")
+        
+        # Adiciona a coluna de plataforma
+        df['platform'] = 'Facebook'
+        
+        # Garante que os tipos de dados estão corretos
+        df['spend'] = pd.to_numeric(df['spend'], errors='coerce')
+        df['impressions'] = pd.to_numeric(df['impressions'], errors='coerce')
+        df['clicks'] = pd.to_numeric(df['clicks'], errors='coerce')
+        df['ctr'] = pd.to_numeric(df['ctr'], errors='coerce')
+        df['cpc'] = pd.to_numeric(df['cpc'], errors='coerce')
+        df['cpm'] = pd.to_numeric(df['cpm'], errors='coerce')
+        df['reach'] = pd.to_numeric(df['reach'], errors='coerce')
+        
+        # Adiciona coluna de conversões se existir
+        if 'conversions' in df.columns:
+            df['conversions'] = pd.to_numeric(df['conversions'], errors='coerce')
+        else:
+            df['conversions'] = 0
+            
+        return df
+        
+    except Exception as e:
+        print(f"Erro ao processar arquivo CSV do Facebook: {str(e)}")
+        return pd.DataFrame()
+
+def process_google_csv(file):
+    """Processa arquivo CSV do Google Ads"""
+    try:
+        df = pd.read_csv(file)
+        required_columns = ['campaign_name', 'cost', 'impressions', 'clicks', 'ctr', 'avg_cpc', 'avg_cpm']
+        
+        # Verifica se as colunas necessárias existem
+        if not all(col in df.columns for col in required_columns):
+            raise ValueError("O arquivo CSV do Google Ads não contém todas as colunas necessárias")
+        
+        # Adiciona a coluna de plataforma
+        df['platform'] = 'Google'
+        
+        # Renomeia colunas para padronizar com o Facebook
+        df = df.rename(columns={
+            'cost': 'spend',
+            'avg_cpc': 'cpc',
+            'avg_cpm': 'cpm'
+        })
+        
+        # Garante que os tipos de dados estão corretos
+        df['spend'] = pd.to_numeric(df['spend'], errors='coerce')
+        df['impressions'] = pd.to_numeric(df['impressions'], errors='coerce')
+        df['clicks'] = pd.to_numeric(df['clicks'], errors='coerce')
+        df['ctr'] = pd.to_numeric(df['ctr'], errors='coerce')
+        df['cpc'] = pd.to_numeric(df['cpc'], errors='coerce')
+        df['cpm'] = pd.to_numeric(df['cpm'], errors='coerce')
+        
+        # Adiciona coluna de conversões se existir
+        if 'conversions' in df.columns:
+            df['conversions'] = pd.to_numeric(df['conversions'], errors='coerce')
+        else:
+            df['conversions'] = 0
+            
+        # Adiciona coluna de alcance se existir
+        if 'reach' in df.columns:
+            df['reach'] = pd.to_numeric(df['reach'], errors='coerce')
+        else:
+            df['reach'] = df['impressions']  # Usa impressões como aproximação
+            
+        return df
+        
+    except Exception as e:
+        print(f"Erro ao processar arquivo CSV do Google Ads: {str(e)}")
         return pd.DataFrame() 
