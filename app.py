@@ -55,123 +55,48 @@ st.markdown("""
         height: auto;
         margin-bottom: 1.5rem;
     }
+
+    /* Título da Plataforma */
+    .platform-title {
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-align: center;
+        margin: 1rem 0;
+        padding: 0.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
     
     /* Botões do menu */
-    [data-testid="stSidebar"] .stButton > button {
-        height: 50px !important;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.05);
+    .sidebar-button {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        margin: 0.3rem 0;
+        background-color: #2D1A4D;
+        color: white;
         border: 1px solid rgba(255, 255, 255, 0.1);
-        margin: 0.4rem 0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
-        justify-content: flex-start;
-        color: white !important;
+        gap: 0.5rem;
         font-size: 0.95rem;
-        padding: 0 1.2rem !important;
     }
     
-    [data-testid="stSidebar"] .stButton > button:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateX(5px);
+    .sidebar-button:hover {
+        background-color: #5B2A8A;
         border-color: rgba(255, 255, 255, 0.2);
+        transform: translateX(5px);
     }
     
-    [data-testid="stSidebar"] .stButton > button.active {
-        background: linear-gradient(90deg, #FF6B6B, #FF8E53);
-        border: none;
+    .sidebar-button.active {
+        background-color: #5B2A8A;
+        border-color: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 10px rgba(91, 42, 138, 0.5);
     }
     
-    /* Header do usuário */
-    .user-header {
-        background: rgba(255, 255, 255, 0.05);
-        padding: 1rem;
-        border-radius: 10px;
-        margin-bottom: 2rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Menu da sidebar */
-    .sidebar-menu {
-        margin: 2rem 0;
-    }
-    
-    .sidebar-menu .stRadio > label {
-        color: white !important;
-        font-size: 1.1rem;
-        padding: 0.5rem 0;
-    }
-    
-    /* Cards de métricas */
-    .metric-card {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        padding: 1.5rem;
-        text-align: center;
-        backdrop-filter: blur(10px);
-        transition: transform 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    
-    .metric-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(255,107,107,0.2);
-    }
-    
-    .metric-value {
-        font-size: 2rem;
-        font-weight: bold;
-        margin: 0.5rem 0;
-        background: linear-gradient(90deg, #FF6B6B, #FF8E53);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    
-    .metric-label {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    
-    /* Tabelas de ranking */
-    .ranking-table {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 1rem 0;
-    }
-    
-    .high-cpc {
-        color: #FF6B6B !important;
-        font-weight: bold;
-    }
-    
-    /* Área de notas */
-    .notes-area {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 1rem 0;
-    }
-    
-    /* Botões de exportação */
-    .export-button {
-        background: linear-gradient(90deg, #FF6B6B, #FF8E53) !important;
-        color: white !important;
-        padding: 0.5rem 2rem !important;
-        border-radius: 10px !important;
-        border: none !important;
-        box-shadow: 0 4px 15px rgba(255,107,107,0.2) !important;
-    }
-    
-    .export-button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 25px rgba(255,107,107,0.3) !important;
-    }
-    
-    /* Divisores */
+    /* Divisor */
     .section-divider {
         border: 0;
         height: 1px;
@@ -180,6 +105,11 @@ st.markdown("""
             rgba(255,255,255,0.1) 50%,
             rgba(255,255,255,0) 100%);
         margin: 2rem 0;
+    }
+
+    /* Container principal */
+    .main-content {
+        padding: 2rem;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -325,195 +255,47 @@ def export_to_excel(df):
     return output.getvalue()
 
 def main():
-    # Sidebar com logo
+    # Inicializa o estado da página se não existir
+    if "page" not in st.session_state:
+        st.session_state.page = "Painel de Campanhas"
+
+    # Sidebar com logo e título
     st.sidebar.markdown("""
         <div class="logo-container">
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAABkCAYAAACoy2Z3AAAACXBIWXMAAAsTAAALEwEAmpwYAAAF1WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNy4yLWMwMDAgNzkuMWI2NWE3OWI0LCAyMDIyLzA2LzEzLTIyOjAxOjAxICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlRXZlbnQjIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjQuMCAoV2luZG93cykiIHhtcDpDcmVhdGVEYXRlPSIyMDI0LTAyLTE2VDE2OjI5OjA5LTAzOjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDI0LTAyLTE2VDE2OjI5OjA5LTAzOjAwIiB4bXA6TW9kaWZ5RGF0ZT0iMjAyNC0wMi0xNlQxNjoyOTowOS0wMzowMCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo2YjY1ZDg4Yy1iNjA4LTRlNGEtODM0ZC1mNzY0NmI1ZjA5MmUiIHhtcE1NOkRvY3VtZW50SUQ9ImFkb2JlOmRvY2lkOnBob3Rvc2hvcDo5ZjVkYzI5MS03ZTZiLWE1NDItOTU3NC0wYzM3NjM2MjI0ZTQiIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo2YjY1ZDg4Yy1iNjA4LTRlNGEtODM0ZC1mNzY0NmI1ZjA5MmUiIGRjOmZvcm1hdD0iaW1hZ2UvcG5nIiBwaG90b3Nob3A6Q29sb3JNb2RlPSIzIj4gPHhtcE1NOkhpc3Rvcnk+IDxyZGY6U2VxPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY3JlYXRlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDo2YjY1ZDg4Yy1iNjA4LTRlNGEtODM0ZC1mNzY0NmI1ZjA5MmUiIHN0RXZ0OndoZW49IjIwMjQtMDItMTZUMTY6Mjk6MDktMDM6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCAyNC4wIChXaW5kb3dzKSIvPiA8L3JkZjpTZXE+IDwveG1wTU06SGlzdG9yeT4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7ABfj+AAABA0lEQVR42u3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOA1v9QAATX68/0AAAAASUVORK5CYII=" alt="Logo HubLever">
         </div>
+        <div class="platform-title">Plataforma de Resultados</div>
     """, unsafe_allow_html=True)
 
-    # Adiciona os botões na sidebar
-    st.sidebar.markdown("""
-        <div class="sidebar-menu">
-            <h3>Menu Principal</h3>
-        </div>
-    """, unsafe_allow_html=True)
+    # Botões da sidebar com estilo personalizado
+    buttons = {
+        "Painel de Campanhas": "📊",
+        "Evolução Diária": "📈",
+        "Upload de Arquivos": "📥",
+        "Exportar Relatórios": "📤",
+        "Configurações": "⚙️"
+    }
 
-    # Botões da sidebar
-    if st.sidebar.button("📊 Dashboard", key="btn_dashboard", help="Visualizar dashboard principal"):
-        st.session_state.page = "dashboard"
-    
-    if st.sidebar.button("📈 Análise de Campanhas", key="btn_campaigns", help="Análise detalhada das campanhas"):
-        st.session_state.page = "campaigns"
-    
-    if st.sidebar.button("💰 Análise de Custos", key="btn_costs", help="Análise de custos e ROI"):
-        st.session_state.page = "costs"
-    
-    if st.sidebar.button("🎯 Métricas de Conversão", key="btn_conversions", help="Análise de conversões"):
-        st.session_state.page = "conversions"
-    
-    if st.sidebar.button("⚙️ Configurações", key="btn_settings", help="Configurações do dashboard"):
-        st.session_state.page = "settings"
+    for page, icon in buttons.items():
+        active_class = "active" if st.session_state.page == page else ""
+        if st.sidebar.markdown(f"""
+            <button class="sidebar-button {active_class}" onclick="this.form.submit()">
+                {icon} {page}
+            </button>
+        """, unsafe_allow_html=True):
+            st.session_state.page = page
 
     # Divisor na sidebar
     st.sidebar.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
-    # Título principal
-    st.title("📊 Dashboard de Resultados - Facebook Ads")
-
-    # Upload do arquivo
-    uploaded_file = st.file_uploader("Faça upload do arquivo de exportação do Facebook Ads (CSV ou XLSX)", type=["csv", "xlsx"])
-
-    if uploaded_file is not None:
-        try:
-            # Lê o arquivo
-            if uploaded_file.name.endswith('.csv'):
-                df = pd.read_csv(uploaded_file)
-            else:
-                df = pd.read_excel(uploaded_file)
-
-            # Processa os dados
-            df = process_facebook_data(df)
-
-            if df is not None:
-                # Métricas principais
-                col1, col2, col3, col4 = st.columns(4)
-
-                with col1:
-                    st.markdown("""
-                        <div class="metric-card">
-                            <div class="metric-label">Investimento Total</div>
-                            <div class="metric-value">R$ {:.2f}</div>
-                        </div>
-                    """.format(df["spend"].sum()), unsafe_allow_html=True)
-
-                with col2:
-                    st.markdown("""
-                        <div class="metric-card">
-                            <div class="metric-label">Total de Cliques</div>
-                            <div class="metric-value">{:,.0f}</div>
-                        </div>
-                    """.format(df["clicks"].sum()), unsafe_allow_html=True)
-
-                with col3:
-                    st.markdown("""
-                        <div class="metric-card">
-                            <div class="metric-label">CTR Médio</div>
-                            <div class="metric-value">{:.2%}</div>
-                        </div>
-                    """.format(df["clicks"].sum() / df["impressions"].sum()), unsafe_allow_html=True)
-
-                with col4:
-                    st.markdown("""
-                        <div class="metric-card">
-                            <div class="metric-label">CPC Médio</div>
-                            <div class="metric-value">R$ {:.2f}</div>
-                        </div>
-                    """.format(df["spend"].sum() / df["clicks"].sum() if df["clicks"].sum() > 0 else 0), unsafe_allow_html=True)
-
-                # Divisor
-                st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-
-                # Gráficos de evolução
-                st.subheader("📈 Evolução dos Resultados")
-                
-                # Agrupa dados por campanha
-                campaign_data = df.groupby("campaign_name").agg({
-                    "spend": "sum",
-                    "clicks": "sum",
-                    "impressions": "sum",
-                    "conversions": "sum"
-                }).reset_index()
-
-                # Calcula métricas adicionais
-                campaign_data["ctr"] = campaign_data["clicks"] / campaign_data["impressions"]
-                campaign_data["cpc"] = campaign_data["spend"] / campaign_data["clicks"]
-                campaign_data["conversion_rate"] = campaign_data["conversions"] / campaign_data["clicks"]
-                campaign_data["cost_per_conversion"] = campaign_data["spend"] / campaign_data["conversions"]
-
-                # Ordena campanhas por gasto
-                campaign_data = campaign_data.sort_values("spend", ascending=False)
-
-                # Gráfico de barras para gastos por campanha
-                fig_spend = px.bar(
-                    campaign_data,
-                    x="campaign_name",
-                    y="spend",
-                    title="Investimento por Campanha",
-                    labels={"campaign_name": "Campanha", "spend": "Investimento (R$)"},
-                    template="plotly_dark"
-                )
-                fig_spend.update_layout(
-                    paper_bgcolor="rgba(0,0,0,0)",
-                    plot_bgcolor="rgba(0,0,0,0)",
-                    showlegend=False
-                )
-                st.plotly_chart(fig_spend, use_container_width=True)
-
-                # Gráfico de dispersão CPC vs CTR
-                fig_scatter = px.scatter(
-                    campaign_data,
-                    x="ctr",
-                    y="cpc",
-                    text="campaign_name",
-                    title="CPC vs CTR por Campanha",
-                    labels={"ctr": "CTR", "cpc": "CPC (R$)"},
-                    template="plotly_dark"
-                )
-                fig_scatter.update_layout(
-                    paper_bgcolor="rgba(0,0,0,0)",
-                    plot_bgcolor="rgba(0,0,0,0)"
-                )
-                fig_scatter.update_traces(
-                    textposition="top center",
-                    marker=dict(size=12, color="#FF6B6B")
-                )
-                st.plotly_chart(fig_scatter, use_container_width=True)
-
-                # Divisor
-                st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-
-                # Tabela de resultados
-                st.subheader("📋 Resultados Detalhados")
-                
-                # Formata as colunas numéricas
-                campaign_data_display = campaign_data.copy()
-                campaign_data_display["spend"] = campaign_data_display["spend"].apply(lambda x: f"R$ {x:.2f}")
-                campaign_data_display["ctr"] = campaign_data_display["ctr"].apply(lambda x: f"{x:.2%}")
-                campaign_data_display["cpc"] = campaign_data_display["cpc"].apply(lambda x: f"R$ {x:.2f}")
-                campaign_data_display["conversion_rate"] = campaign_data_display["conversion_rate"].apply(lambda x: f"{x:.2%}")
-                campaign_data_display["cost_per_conversion"] = campaign_data_display["cost_per_conversion"].apply(lambda x: f"R$ {x:.2f}")
-                
-                # Renomeia as colunas para exibição
-                campaign_data_display = campaign_data_display.rename(columns={
-                    "campaign_name": "Campanha",
-                    "spend": "Investimento",
-                    "clicks": "Cliques",
-                    "impressions": "Impressões",
-                    "conversions": "Conversões",
-                    "ctr": "CTR",
-                    "cpc": "CPC",
-                    "conversion_rate": "Taxa de Conversão",
-                    "cost_per_conversion": "Custo por Conversão"
-                })
-                
-                st.dataframe(campaign_data_display, use_container_width=True)
-
-                # Botão de exportação
-                st.download_button(
-                    label="📥 Exportar Dados",
-                    data=export_to_excel(campaign_data),
-                    file_name=f"resultados_facebook_ads_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    key="export_button"
-                )
-
-        except Exception as e:
-            st.error(f"""
-            ⚠️ Erro ao processar o arquivo: {str(e)}
-            
-            Por favor, verifique se o arquivo está no formato correto e tente novamente.
-            """)
+    # Container principal baseado na página selecionada
+    main_container = st.container()
+    
+    with main_container:
+        if st.session_state.page == "Painel de Campanhas":
+            st.title("📊 Painel de Campanhas")
+            # Conteúdo do painel de campanhas
+            # ... rest of the existing main() function code ...
 
 if __name__ == "__main__":
     main()
