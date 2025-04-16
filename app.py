@@ -8,7 +8,7 @@ from datetime import datetime
 # Configuração da página
 st.set_page_config(
     page_title="Dashboard de Performance de Anúncios",
-    page_icon="��",
+    page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -16,60 +16,107 @@ st.set_page_config(
 # Estilo CSS personalizado
 st.markdown("""
     <style>
-    /* Fundo principal branco */
-    .main {
-        background-color: white !important;
+    /* Tema escuro personalizado */
+    [data-testid="stAppViewContainer"] {
+        background: linear-gradient(180deg, #1E1B2E 0%, #2D1A4D 100%);
     }
+    
     .stApp {
-        background-color: white !important;
+        background: transparent;
     }
     
-    /* Barra lateral em tons de roxo */
-    .css-1d391kg {
-        background-color: #6B46C1 !important;
-    }
-    .css-1d391kg .stButton > button {
-        background-color: white !important;
-        color: #6B46C1 !important;
+    /* Barra lateral estilizada */
+    [data-testid="stSidebar"] {
+        background: rgba(45, 26, 77, 0.95);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
     
-    /* Cards de métricas */
+    /* Estilo dos cards de métricas */
     .metric-card {
-        background-color: white;
-        border-radius: 10px;
-        padding: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1.5rem;
         text-align: center;
-        border: 1px solid #e0e0e0;
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease;
     }
     
-    /* Botões */
+    .metric-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0.5rem 0;
+        background: linear-gradient(90deg, #FF6B6B, #FF8E53);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .metric-label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* Estilo dos títulos */
+    h1, h2, h3 {
+        color: white !important;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    /* Estilo dos gráficos */
+    [data-testid="stPlotlyChart"] {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 15px;
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Estilo da tabela de dados */
+    .stDataFrame {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 15px;
+        padding: 1rem;
+    }
+    
+    /* Estilo do rodapé */
+    .footer {
+        text-align: center;
+        padding: 2rem;
+        margin-top: 3rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Estilo dos botões */
     .stButton > button {
-        background-color: #6B46C1 !important;
+        background: linear-gradient(90deg, #FF6B6B, #FF8E53) !important;
         color: white !important;
         border: none !important;
-        border-radius: 5px !important;
-        padding: 10px 20px !important;
-        width: 100% !important;
+        padding: 0.5rem 2rem !important;
+        border-radius: 10px !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
     }
+    
     .stButton > button:hover {
-        background-color: #553C9A !important;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 107, 107, 0.2);
     }
     
-    /* Textos na barra lateral */
-    .css-1d391kg .stMarkdown {
-        color: white !important;
-    }
-    
-    /* Logo container */
-    .logo-container {
-        padding: 20px;
-        margin-bottom: 30px;
-    }
-    
-    /* Ajustes de cores para outros elementos */
-    .stSelectbox label, .stDateInput label {
-        color: white !important;
+    /* Divisores personalizados */
+    .custom-divider {
+        border: 0;
+        height: 1px;
+        background: linear-gradient(90deg, 
+            rgba(255,255,255,0) 0%,
+            rgba(255,255,255,0.1) 50%,
+            rgba(255,255,255,0) 100%);
+        margin: 2rem 0;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -186,14 +233,33 @@ def process_facebook_data(df):
 
 def create_spend_distribution_chart(df):
     """Cria gráfico de pizza de distribuição de gastos"""
+    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96C93D', '#FF8E53']
+    
     fig = px.pie(
         df, 
         values='spend', 
         names='campaign_name',
         title='Distribuição de Investimento por Campanha',
-        template='plotly_white'
+        template='plotly_dark',
+        color_discrete_sequence=colors
     )
-    fig.update_traces(textposition='inside', textinfo='percent+label')
+    fig.update_traces(
+        textposition='inside',
+        textinfo='percent+label',
+        hole=0.4,
+        marker=dict(line=dict(color='rgba(255,255,255,0.1)', width=2))
+    )
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        showlegend=True,
+        legend=dict(
+            bgcolor='rgba(255,255,255,0.05)',
+            bordercolor='rgba(255,255,255,0.1)'
+        ),
+        title_x=0.5,
+        title_font_size=20
+    )
     return fig
 
 def create_performance_chart(df):
@@ -204,23 +270,31 @@ def create_performance_chart(df):
         name='Cliques',
         x=df['campaign_name'],
         y=df['clicks'],
-        marker_color='#2196F3'
+        marker_color='#FF6B6B'
     ))
     
     fig.add_trace(go.Bar(
         name='Conversões',
         x=df['campaign_name'],
         y=df['conversions'],
-        marker_color='#4CAF50'
+        marker_color='#4ECDC4'
     ))
     
     fig.update_layout(
         title='Performance por Campanha',
+        title_x=0.5,
+        title_font_size=20,
         xaxis_title='Campanha',
         yaxis_title='Quantidade',
         barmode='group',
-        template='plotly_white',
-        showlegend=True
+        template='plotly_dark',
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        showlegend=True,
+        legend=dict(
+            bgcolor='rgba(255,255,255,0.05)',
+            bordercolor='rgba(255,255,255,0.1)'
+        )
     )
     return fig
 
@@ -252,90 +326,82 @@ def main():
     # Botão de visualização
     visualizar = st.sidebar.button("📊 Visualizar Dados", use_container_width=True)
     
-    if visualizar:
-        if uploaded_file is None:
-            st.info("👆 Por favor, faça o upload do arquivo CSV do Facebook Ads para visualizar os dados.")
-            return
-        
+    if visualizar and uploaded_file is not None:
         # Lê e processa os dados
         df = pd.read_csv(uploaded_file)
         df = process_facebook_data(df)
         
-        if df is None:
-            return
+        if df is not None:
+            # Seção de KPIs
+            st.header("📈 Métricas Principais")
             
-        # Seção de KPIs
-        st.header("📈 Métricas Principais")
-        
-        col1, col2, col3, col4, col5 = st.columns(5)
-        
-        with col1:
-            st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-            st.metric(
-                "Investimento Total",
-                f"R$ {df['spend'].sum():,.2f}"
-            )
+            col1, col2, col3, col4, col5 = st.columns(5)
+            
+            with col1:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                st.markdown('<p class="metric-label">Investimento Total</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="metric-value">R$ {df["spend"].sum():,.2f}</p>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+            with col2:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                st.markdown('<p class="metric-label">Total de Cliques</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="metric-value">{int(df["clicks"].sum()):,}</p>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+            with col3:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                st.markdown('<p class="metric-label">CPC Médio</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="metric-value">R$ {df["spend"].sum() / df["clicks"].sum():.2f}</p>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+            with col4:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                st.markdown('<p class="metric-label">CTR Médio</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="metric-value">{(df["clicks"].sum() / df["impressions"].sum() * 100):.2f}%</p>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+            with col5:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                st.markdown('<p class="metric-label">Conversões</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="metric-value">{int(df["conversions"].sum()):,}</p>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Divisor personalizado
+            st.markdown('<hr class="custom-divider">', unsafe_allow_html=True)
+            
+            # Seção de Gráficos
+            st.header("📊 Análise Visual")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.plotly_chart(
+                    create_spend_distribution_chart(df),
+                    use_container_width=True
+                )
+            
+            with col2:
+                st.plotly_chart(
+                    create_performance_chart(df),
+                    use_container_width=True
+                )
+            
+            # Divisor personalizado
+            st.markdown('<hr class="custom-divider">', unsafe_allow_html=True)
+            
+            # Dados Detalhados
+            st.header("📋 Dados Detalhados")
+            st.dataframe(df, use_container_width=True)
+            
+            # Rodapé com logo
+            st.markdown('<div class="footer">', unsafe_allow_html=True)
+            st.markdown("""
+                <img src="https://hublever.com.br/wp-content/uploads/2024/02/logo-hublever-branco.png" 
+                     style="width: 100px; opacity: 0.7;">
+            """, unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
             
-        with col2:
-            st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-            st.metric(
-                "Total de Cliques",
-                f"{int(df['clicks'].sum()):,}"
-            )
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-        with col3:
-            st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-            st.metric(
-                "CPC Médio",
-                f"R$ {df['spend'].sum() / df['clicks'].sum():.2f}"
-            )
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-        with col4:
-            st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-            st.metric(
-                "CTR Médio",
-                f"{(df['clicks'].sum() / df['impressions'].sum() * 100):.2f}%"
-            )
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-        with col5:
-            st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-            st.metric(
-                "Conversões",
-                f"{int(df['conversions'].sum()):,}"
-            )
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Seção de Gráficos
-        st.header("📊 Análise Visual")
-        
-        # Distribuição de Gastos
-        st.subheader("Distribuição do Investimento")
-        st.plotly_chart(
-            create_spend_distribution_chart(df),
-            use_container_width=True
-        )
-        
-        # Performance por Campanha
-        st.subheader("Performance das Campanhas")
-        st.plotly_chart(
-            create_performance_chart(df),
-            use_container_width=True
-        )
-        
-        # Evolução Temporal (se houver data)
-        trend_chart = create_spend_trend_chart(df)
-        if trend_chart:
-            st.subheader("Evolução do Investimento")
-            st.plotly_chart(trend_chart, use_container_width=True)
-        
-        # Dados Detalhados
-        st.header("📋 Dados Detalhados")
-        st.dataframe(df)
-        
     else:
         st.info("👆 Faça o upload do arquivo CSV do Facebook Ads e clique em 'Visualizar Dados' para começar.")
         
@@ -343,14 +409,13 @@ def main():
         ### Formato esperado do arquivo CSV:
         
         O arquivo deve conter as seguintes colunas:
-        - campaign_name
-        - spend
-        - clicks
-        - impressions
-        - ctr
-        - cpc
-        - conversions (opcional)
-        - date (opcional, para gráfico de evolução)
+        - Nome da campanha / Campaign name
+        - Valor usado (BRL) / Amount spent (BRL)
+        - Impressões / Impressions
+        - Cliques no link / Link clicks
+        - CTR / CTR (opcional)
+        - CPC / CPC (opcional)
+        - Conversões / Results (opcional)
         """)
 
 if __name__ == "__main__":
