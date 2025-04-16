@@ -35,34 +35,34 @@ st.markdown("""
         padding: 2rem 0;
     }
     
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+        gap: 0.5rem;
+    }
+    
     /* Botões do menu */
-    .menu-button {
+    [data-testid="stSidebar"] .stButton button {
+        width: 100%;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 10px;
         padding: 0.8rem 1rem;
-        margin: 0.5rem 0;
-        cursor: pointer;
+        color: white !important;
+        font-size: 1rem;
         transition: all 0.3s ease;
         display: flex;
         align-items: center;
-        color: white;
-        text-decoration: none;
+        margin: 0.2rem 0;
     }
     
-    .menu-button:hover {
+    [data-testid="stSidebar"] .stButton button:hover {
         background: rgba(255, 255, 255, 0.1);
         transform: translateX(5px);
+        border-color: rgba(255, 255, 255, 0.2);
     }
     
-    .menu-button.active {
+    [data-testid="stSidebar"] .stButton button.active {
         background: linear-gradient(90deg, #FF6B6B, #FF8E53);
         border: none;
-    }
-    
-    .menu-button i {
-        margin-right: 10px;
-        font-size: 1.2rem;
     }
     
     /* Header do usuário */
@@ -308,7 +308,7 @@ def export_to_excel(df):
     return output.getvalue()
 
 def main():
-    # Sidebar com logo e menu
+    # Sidebar com logo
     st.sidebar.markdown("""
         <div style="text-align: center; padding: 1rem;">
             <img src="https://hublever.com.br/wp-content/uploads/2024/02/logo-hublever-branco.png" 
@@ -317,7 +317,11 @@ def main():
         </div>
     """, unsafe_allow_html=True)
     
-    # Menu com botões estilizados
+    # Inicialização do estado do menu
+    if 'menu_selected' not in st.session_state:
+        st.session_state.menu_selected = 'dashboard'
+    
+    # Menu com botões funcionais
     menu_options = {
         "📊 Painel de Campanhas": "dashboard",
         "📈 Evolução Diária": "evolution",
@@ -326,17 +330,18 @@ def main():
         "⚙️ Configurações": "settings"
     }
     
-    selected = st.session_state.get('menu_selected', 'dashboard')
-    
+    # Criação dos botões do menu
     for label, key in menu_options.items():
-        button_class = "menu-button active" if selected == key else "menu-button"
-        if st.sidebar.markdown(f"""
-            <div class="{button_class}">
-                {label}
-            </div>
-            """, unsafe_allow_html=True):
-            selected = key
+        if st.sidebar.button(
+            label,
+            key=f"btn_{key}",
+            use_container_width=True,
+            help=f"Ir para {label}"
+        ):
             st.session_state.menu_selected = key
+            st.experimental_rerun()
+    
+    selected = st.session_state.menu_selected
     
     # Header do usuário
     st.markdown("""
@@ -370,6 +375,11 @@ def main():
                     # Preview dos dados
                     st.subheader("Preview dos dados carregados")
                     st.dataframe(processed_df.head(), use_container_width=True)
+                    
+                    # Botão para ir para o dashboard
+                    if st.button("📊 Ver Dashboard"):
+                        st.session_state.menu_selected = "dashboard"
+                        st.experimental_rerun()
                 else:
                     st.error("❌ Erro ao processar o arquivo. Verifique se o formato está correto.")
             except Exception as e:
