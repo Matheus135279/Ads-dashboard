@@ -332,7 +332,162 @@ def main():
         </div>
     """, unsafe_allow_html=True)
 
-    # Rest of the function remains unchanged
+    # Título principal
+    st.title("📊 Dashboard de Resultados - Facebook Ads")
+
+    # Upload do arquivo
+    uploaded_file = st.file_uploader("Faça upload do arquivo de exportação do Facebook Ads (CSV ou XLSX)", type=["csv", "xlsx"])
+
+    if uploaded_file is not None:
+        try:
+            # Lê o arquivo
+            if uploaded_file.name.endswith('.csv'):
+                df = pd.read_csv(uploaded_file)
+            else:
+                df = pd.read_excel(uploaded_file)
+
+            # Processa os dados
+            df = process_facebook_data(df)
+
+            if df is not None:
+                # Métricas principais
+                col1, col2, col3, col4 = st.columns(4)
+
+                with col1:
+                    st.markdown("""
+                        <div class="metric-card">
+                            <div class="metric-label">Investimento Total</div>
+                            <div class="metric-value">R$ {:.2f}</div>
+                        </div>
+                    """.format(df["spend"].sum()), unsafe_allow_html=True)
+
+                with col2:
+                    st.markdown("""
+                        <div class="metric-card">
+                            <div class="metric-label">Total de Cliques</div>
+                            <div class="metric-value">{:,.0f}</div>
+                        </div>
+                    """.format(df["clicks"].sum()), unsafe_allow_html=True)
+
+                with col3:
+                    st.markdown("""
+                        <div class="metric-card">
+                            <div class="metric-label">CTR Médio</div>
+                            <div class="metric-value">{:.2%}</div>
+                        </div>
+                    """.format(df["clicks"].sum() / df["impressions"].sum()), unsafe_allow_html=True)
+
+                with col4:
+                    st.markdown("""
+                        <div class="metric-card">
+                            <div class="metric-label">CPC Médio</div>
+                            <div class="metric-value">R$ {:.2f}</div>
+                        </div>
+                    """.format(df["spend"].sum() / df["clicks"].sum() if df["clicks"].sum() > 0 else 0), unsafe_allow_html=True)
+
+                # Divisor
+                st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
+                # Gráficos de evolução
+                st.subheader("📈 Evolução dos Resultados")
+                
+                # Agrupa dados por campanha
+                campaign_data = df.groupby("campaign_name").agg({
+                    "spend": "sum",
+                    "clicks": "sum",
+                    "impressions": "sum",
+                    "conversions": "sum"
+                }).reset_index()
+
+                # Calcula métricas adicionais
+                campaign_data["ctr"] = campaign_data["clicks"] / campaign_data["impressions"]
+                campaign_data["cpc"] = campaign_data["spend"] / campaign_data["clicks"]
+                campaign_data["conversion_rate"] = campaign_data["conversions"] / campaign_data["clicks"]
+                campaign_data["cost_per_conversion"] = campaign_data["spend"] / campaign_data["conversions"]
+
+                # Ordena campanhas por gasto
+                campaign_data = campaign_data.sort_values("spend", ascending=False)
+
+                # Gráfico de barras para gastos por campanha
+                fig_spend = px.bar(
+                    campaign_data,
+                    x="campaign_name",
+                    y="spend",
+                    title="Investimento por Campanha",
+                    labels={"campaign_name": "Campanha", "spend": "Investimento (R$)"},
+                    template="plotly_dark"
+                )
+                fig_spend.update_layout(
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    showlegend=False
+                )
+                st.plotly_chart(fig_spend, use_container_width=True)
+
+                # Gráfico de dispersão CPC vs CTR
+                fig_scatter = px.scatter(
+                    campaign_data,
+                    x="ctr",
+                    y="cpc",
+                    text="campaign_name",
+                    title="CPC vs CTR por Campanha",
+                    labels={"ctr": "CTR", "cpc": "CPC (R$)"},
+                    template="plotly_dark"
+                )
+                fig_scatter.update_layout(
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)"
+                )
+                fig_scatter.update_traces(
+                    textposition="top center",
+                    marker=dict(size=12, color="#FF6B6B")
+                )
+                st.plotly_chart(fig_scatter, use_container_width=True)
+
+                # Divisor
+                st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
+                # Tabela de resultados
+                st.subheader("📋 Resultados Detalhados")
+                
+                # Formata as colunas numéricas
+                campaign_data_display = campaign_data.copy()
+                campaign_data_display["spend"] = campaign_data_display["spend"].apply(lambda x: f"R$ {x:.2f}")
+                campaign_data_display["ctr"] = campaign_data_display["ctr"].apply(lambda x: f"{x:.2%}")
+                campaign_data_display["cpc"] = campaign_data_display["cpc"].apply(lambda x: f"R$ {x:.2f}")
+                campaign_data_display["conversion_rate"] = campaign_data_display["conversion_rate"].apply(lambda x: f"{x:.2%}")
+                campaign_data_display["cost_per_conversion"] = campaign_data_display["cost_per_conversion"].apply(lambda x: f"R$ {x:.2f}")
+                
+                # Renomeia as colunas para exibição
+                campaign_data_display = campaign_data_display.rename(columns={
+                    "campaign_name": "Campanha",
+                    "spend": "Investimento",
+                    "clicks": "Cliques",
+                    "impressions": "Impressões",
+                    "conversions": "Conversões",
+                    "ctr": "CTR",
+                    "cpc": "CPC",
+                    "conversion_rate": "Taxa de Conversão",
+                    "cost_per_conversion": "Custo por Conversão"
+                })
+                
+                st.dataframe(campaign_data_display, use_container_width=True)
+
+                # Botão de exportação
+                st.download_button(
+                    label="📥 Exportar Dados",
+                    data=export_to_excel(campaign_data),
+                    file_name=f"resultados_facebook_ads_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key="export_button"
+                )
+
+        except Exception as e:
+            st.error(f"""
+            ⚠️ Erro ao processar o arquivo: {str(e)}
+            
+            Por favor, verifique se o arquivo está no formato correto e tente novamente.
+            """)
 
 if __name__ == "__main__":
     main()
