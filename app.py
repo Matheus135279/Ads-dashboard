@@ -32,26 +32,6 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# Autenticação simples
-def check_password():
-    if "authenticated" not in st.session_state:
-        st.session_state.authenticated = False
-        
-    if not st.session_state.authenticated:
-        col1, col2, col3 = st.columns([1,2,1])
-        with col2:
-            st.markdown("## Login")
-            username = st.text_input("Usuário")
-            password = st.text_input("Senha", type="password")
-            if st.button("Entrar"):
-                if username == st.secrets["STREAMLIT_USERNAME"] and password == st.secrets["STREAMLIT_PASSWORD"]:
-                    st.session_state.authenticated = True
-                    st.experimental_rerun()
-                else:
-                    st.error("Usuário ou senha incorretos")
-        return False
-    return True
-
 def main():
     st.title("📊 Dashboard de Performance de Anúncios")
     
@@ -170,5 +150,4 @@ def main():
         st.error(f"Erro ao carregar os dados: {str(e)}")
 
 if __name__ == "__main__":
-    if check_password():
-        main() 
+    main() 
