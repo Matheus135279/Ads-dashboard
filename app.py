@@ -32,79 +32,69 @@ st.markdown("""
     [data-testid="stSidebar"] {
         background: #2D1A4D;
         border-right: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 2rem 0;
     }
     
     [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
-        gap: 0.5rem;
         padding: 0 1rem;
     }
     
     /* Logo container */
     .logo-container {
-        position: relative;
-        width: 100%;
-        padding: 1rem;
-        margin-bottom: 2rem;
         text-align: center;
+        padding: 2rem 1rem;
     }
     
     .logo-container img {
-        width: 80%;
-        max-width: 200px;
-        height: auto;
-        margin-bottom: 1.5rem;
+        width: 150px;
+        margin-bottom: 1rem;
     }
 
     /* Título da Plataforma */
     .platform-title {
         color: white;
         font-size: 1.2rem;
-        font-weight: 600;
+        font-weight: 500;
         text-align: center;
-        margin: 1rem 0 2rem 0;
-        padding: 0.5rem;
+        margin-bottom: 2rem;
     }
 
     /* Botões do menu */
-    div[data-testid="stSidebar"] button[kind="secondary"] {
-        background-color: rgba(255, 255, 255, 0.05);
-        border: none;
-        padding: 15px 20px;
+    [data-testid="stSidebar"] [data-testid="stButton"] {
         width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    [data-testid="stSidebar"] button {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 10px;
-        border-radius: 10px;
-        color: white;
-        font-size: 0.95rem;
-        margin: 5px 0;
+        gap: 0.5rem;
         transition: all 0.3s ease;
     }
 
-    div[data-testid="stSidebar"] button[kind="secondary"]:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        border: none;
+    [data-testid="stSidebar"] button:hover {
+        background: rgba(255, 255, 255, 0.1);
     }
 
-    div[data-testid="stSidebar"] button[kind="secondary"].active {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    /* Divisor */
-    .section-divider {
-        border: 0;
-        height: 1px;
-        background: linear-gradient(90deg, 
-            rgba(255,255,255,0) 0%,
-            rgba(255,255,255,0.1) 50%,
-            rgba(255,255,255,0) 100%);
-        margin: 2rem 0;
+    [data-testid="stSidebar"] button.active {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     /* Container principal */
     .main-content {
         padding: 2rem;
+    }
+
+    /* Esconde o menu hamburguer */
+    [data-testid="collapsedControl"] {
+        display: none;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -258,81 +248,65 @@ def main():
     st.sidebar.markdown("""
         <div class="logo-container">
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAABkCAYAAACoy2Z3AAAACXBIWXMAAAsTAAALEwEAmpwYAAAF1WlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNy4yLWMwMDAgNzkuMWI2NWE3OWI0LCAyMDIyLzA2LzEzLTIyOjAxOjAxICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlRXZlbnQjIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjQuMCAoV2luZG93cykiIHhtcDpDcmVhdGVEYXRlPSIyMDI0LTAyLTE2VDE2OjI5OjA5LTAzOjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDI0LTAyLTE2VDE2OjI5OjA5LTAzOjAwIiB4bXA6TW9kaWZ5RGF0ZT0iMjAyNC0wMi0xNlQxNjoyOTowOS0wMzowMCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo2YjY1ZDg4Yy1iNjA4LTRlNGEtODM0ZC1mNzY0NmI1ZjA5MmUiIHhtcE1NOkRvY3VtZW50SUQ9ImFkb2JlOmRvY2lkOnBob3Rvc2hvcDo5ZjVkYzI5MS03ZTZiLWE1NDItOTU3NC0wYzM3NjM2MjI0ZTQiIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo2YjY1ZDg4Yy1iNjA4LTRlNGEtODM0ZC1mNzY0NmI1ZjA5MmUiIGRjOmZvcm1hdD0iaW1hZ2UvcG5nIiBwaG90b3Nob3A6Q29sb3JNb2RlPSIzIj4gPHhtcE1NOkhpc3Rvcnk+IDxyZGY6U2VxPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY3JlYXRlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDo2YjY1ZDg4Yy1iNjA4LTRlNGEtODM0ZC1mNzY0NmI1ZjA5MmUiIHN0RXZ0OndoZW49IjIwMjQtMDItMTZUMTY6Mjk6MDktMDM6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCAyNC4wIChXaW5kb3dzKSIvPiA8L3JkZjpTZXE+IDwveG1wTU06SGlzdG9yeT4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7ABfj+AAABA0lEQVR42u3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOA1v9QAATX68/0AAAAASUVORK5CYII=" alt="Logo HubLever">
+            <div class="platform-title">Plataforma de Resultados</div>
         </div>
-        <div class="platform-title">Plataforma de Resultados</div>
     """, unsafe_allow_html=True)
 
     # Botões da sidebar
-    if st.sidebar.button("🖥️ Painel de Campanhas", key="btn_dashboard", help="Visualizar painel de campanhas"):
-        st.session_state.page = "Painel de Campanhas"
-    
-    if st.sidebar.button("📈 Evolução Diária", key="btn_evolution", help="Ver evolução diária"):
-        st.session_state.page = "Evolução Diária"
-    
-    if st.sidebar.button("📥 Upload de Arquivos", key="btn_upload", help="Fazer upload de arquivos"):
-        st.session_state.page = "Upload de Arquivos"
-    
-    if st.sidebar.button("📤 Exportar Relatórios", key="btn_export", help="Exportar relatórios"):
-        st.session_state.page = "Exportar Relatórios"
-    
-    if st.sidebar.button("⚙️ Configurações", key="btn_settings", help="Configurações do sistema"):
-        st.session_state.page = "Configurações"
+    menu_items = {
+        "Painel de Campanhas": "🖥️",
+        "Evolução Diária": "📈",
+        "Upload de Arquivos": "📥",
+        "Exportar Relatórios": "📤",
+        "Configurações": "⚙️"
+    }
 
-    # Container principal baseado na página selecionada
-    main_container = st.container()
+    for page, icon in menu_items.items():
+        if st.sidebar.button(f"{icon} {page}", key=f"btn_{page.lower().replace(' ', '_')}"):
+            st.session_state.page = page
+
+    # Conteúdo principal
+    if st.session_state.page == "Painel de Campanhas":
+        st.title(f"🖥️ Painel de Campanhas")
+        show_campaign_dashboard()
     
-    with main_container:
-        if st.session_state.page == "Painel de Campanhas":
-            st.title("📊 Painel de Campanhas")
-            # Conteúdo do painel de campanhas
-            show_campaign_dashboard()
-        
-        elif st.session_state.page == "Evolução Diária":
-            st.title("📈 Evolução Diária")
-            # Conteúdo da evolução diária
-            show_daily_evolution()
-        
-        elif st.session_state.page == "Upload de Arquivos":
-            st.title("📥 Upload de Arquivos")
-            # Conteúdo do upload de arquivos
-            show_file_upload()
-        
-        elif st.session_state.page == "Exportar Relatórios":
-            st.title("📤 Exportar Relatórios")
-            # Conteúdo da exportação de relatórios
-            show_export_reports()
-        
-        elif st.session_state.page == "Configurações":
-            st.title("⚙️ Configurações")
-            # Conteúdo das configurações
-            show_settings()
+    elif st.session_state.page == "Evolução Diária":
+        st.title(f"📈 Evolução Diária")
+        show_daily_evolution()
+    
+    elif st.session_state.page == "Upload de Arquivos":
+        st.title(f"📥 Upload de Arquivos")
+        show_file_upload()
+    
+    elif st.session_state.page == "Exportar Relatórios":
+        st.title(f"📤 Exportar Relatórios")
+        show_export_reports()
+    
+    elif st.session_state.page == "Configurações":
+        st.title(f"⚙️ Configurações")
+        show_settings()
 
 def show_campaign_dashboard():
-    """Função para mostrar o painel de campanhas"""
-    # Aqui vai o código original do dashboard de campanhas
-    pass
+    st.write("Bem-vindo ao Painel de Campanhas!")
+    # Aqui vai o código do dashboard
 
 def show_daily_evolution():
-    """Função para mostrar a evolução diária"""
-    st.write("Em desenvolvimento: Evolução Diária")
+    st.write("Visualize a evolução diária das suas campanhas")
+    # Código da evolução diária
 
 def show_file_upload():
-    """Função para mostrar a tela de upload"""
-    uploaded_file = st.file_uploader("Faça upload do arquivo de exportação do Facebook Ads (CSV ou XLSX)", type=["csv", "xlsx"])
+    st.write("Faça upload dos seus arquivos aqui")
+    uploaded_file = st.file_uploader("Selecione um arquivo CSV ou XLSX", type=["csv", "xlsx"])
     if uploaded_file is not None:
-        try:
-            # Código existente para processar o arquivo
-            pass
-        except Exception as e:
-            st.error(f"Erro ao processar o arquivo: {str(e)}")
+        st.success("Arquivo carregado com sucesso!")
 
 def show_export_reports():
-    """Função para mostrar a tela de exportação"""
-    st.write("Em desenvolvimento: Exportação de Relatórios")
+    st.write("Exporte seus relatórios personalizados")
+    # Código de exportação
 
 def show_settings():
-    """Função para mostrar a tela de configurações"""
-    st.write("Em desenvolvimento: Configurações")
+    st.write("Configure suas preferências")
+    # Código das configurações
 
 if __name__ == "__main__":
     main()
